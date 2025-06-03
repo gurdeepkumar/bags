@@ -1,1 +1,1 @@
-# Import all models here
+from app.models.user import *
