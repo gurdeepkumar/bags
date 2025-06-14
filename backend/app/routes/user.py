@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 
 from app.schemas.user import (
     UserCreate,
@@ -9,6 +8,8 @@ from app.schemas.user import (
     TokenRefreshRequest,
     AccessTokenResponse,
     UserProfile,
+    UpdatePasswordRequest,
+    DeleteUserRequest,
 )
 from app.models import User
 from app.core.security import hash_password, verify_password
@@ -19,29 +20,26 @@ from app.core.user_deps import get_current_user
 router = APIRouter(prefix="/usr", tags=["User"])
 
 
-@router.get("/")
-def health_check(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    try:
-        db.execute(text("SELECT 1"))
-        db_status = "ok"
-    except Exception:
-        db_status = "unreachable"
-
-    return {
-        "status": "Server is running",
-        "database": db_status,
-        "username": current_user.username,
-    }
-
-
+# Create user with username, email and password
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == user.email).first()
+    # Check if email or username already exists
+    existing_user = (
+        db.query(User)
+        .filter((User.email == user.email) | (User.username == user.username))
+        .first()
+    )
+
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        # Determine which field is duplicated to provide clearer error message
+        if existing_user.email == user.email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Username already taken"
+            )
 
     hashed_pw = hash_password(user.password)
 
@@ -58,6 +56,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"message": "User registered successfully"}
 
 
+# Get refresh and access token with email and password
 @router.post("/login", response_model=TokenResponse)
 def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     user = db.query(User).filter(User.email == user_input.email).first()
@@ -73,10 +72,10 @@ def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> TokenRespo
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer",
     }
 
 
+# Get a new access token using refresh token
 @router.post("/refresh-token", response_model=AccessTokenResponse)
 def refresh_token(request: TokenRefreshRequest) -> AccessTokenResponse:
     try:
@@ -86,9 +85,34 @@ def refresh_token(request: TokenRefreshRequest) -> AccessTokenResponse:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 
+# Get user from an access token
 @router.get("/me")
 def get_me(current_user: User = Depends(get_current_user)):
     return UserProfile(
         username=current_user.username,
         email=current_user.email,
     )
+
+
+# Update new password with email and old password
+@router.put("/update-password")
+def update_password(data: UpdatePasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user or not verify_password(data.old_password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    user.hashed_password = hash_password(data.new_password)
+    db.commit()
+    return {"message": "Password updated successfully"}
+
+
+# Delete user with email and password
+@router.delete("")
+def delete_user(data: DeleteUserRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user or not verify_password(data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully"}

@@ -13,9 +13,17 @@ class AssetOrTransactionCreate(BaseModel):
 
 
 class AssetResponse(BaseModel):
-    id: int
+    asset_id: int
     coin_symbol: str
     created_at: datetime
+
+    @classmethod
+    def from_orm(cls, obj):
+        return cls(
+            asset_id=obj.id,
+            coin_symbol=obj.coin_symbol,
+            created_at=obj.created_at,
+        )
 
     class Config:
         from_attributes = True
@@ -27,10 +35,19 @@ class TransactionUpdate(BaseModel):
 
 
 class TransactionResponse(BaseModel):
-    id: int
+    tx_id: int
     amount: float
     price: float
     timestamp: datetime
+
+    @classmethod
+    def from_orm(cls, obj):
+        return cls(
+            tx_id=obj.id,
+            amount=obj.amount,
+            price=obj.price,
+            timestamp=obj.timestamp,
+        )
 
     class Config:
         from_attributes = True

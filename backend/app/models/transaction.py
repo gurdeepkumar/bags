@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 from app.db.base import Base
 
 
+# TX table
 class Transaction(Base):
     __tablename__ = "transactions"
 

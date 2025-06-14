@@ -4,7 +4,6 @@ from sqlalchemy import (
     String,
     DateTime,
     func,
-    Float,
     ForeignKey,
     UniqueConstraint,
 )
@@ -12,6 +11,7 @@ from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 
+# Asset table
 class Asset(Base):
     __tablename__ = "assets"
 

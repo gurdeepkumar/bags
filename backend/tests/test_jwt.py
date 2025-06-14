@@ -7,6 +7,9 @@ from app.core.jwt import (
 )
 
 
+# JWT Tests
+
+
 def test_refresh_token():
     user = "gurdeepkumar"
     refresh_token = create_refresh_token(user)
