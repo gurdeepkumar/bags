@@ -8,6 +8,7 @@ app = FastAPI(
     openapi_url=None,
 )
 
+
 # Including the sub routes
 app.include_router(user.router)
 app.include_router(asset.router)
