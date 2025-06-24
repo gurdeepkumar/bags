@@ -1,10 +1,13 @@
 from celery import Celery
+from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 # Redis settings
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_DB = int(os.getenv("REDIS_DB", 0))
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_DB = os.getenv("REDIS_DB")
 
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
@@ -12,7 +15,8 @@ REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 celery_app = Celery(
     "worker",
     broker=REDIS_URL,
-    backend=REDIS_URL,
 )
 
 celery_app.conf.timezone = "UTC"
+
+print(REDIS_URL)

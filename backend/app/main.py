@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import user, asset, coin
+from app.routes import user, asset, portfolio
 
 # Main FastAPI instance
 app = FastAPI(
@@ -8,7 +8,7 @@ app = FastAPI(
     openapi_url=None,
 )
 
-# Including the sub routees
+# Including the sub routes
 app.include_router(user.router)
 app.include_router(asset.router)
-app.include_router(coin.router)
+app.include_router(portfolio.router)

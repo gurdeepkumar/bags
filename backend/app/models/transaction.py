@@ -12,8 +12,8 @@ class Transaction(Base):
     asset_id = Column(
         Integer, ForeignKey("assets.id", ondelete="CASCADE"), nullable=False
     )
-    amount = Column(Numeric(20, 8), nullable=False)
-    price = Column(Numeric(20, 2), nullable=False)
+    qty = Column(Numeric(20, 8), nullable=False)
+    value = Column(Numeric(20, 2), nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     asset = relationship("Asset", back_populates="transactions")

@@ -3,8 +3,6 @@ from jose import JWTError, jwt
 from dotenv import load_dotenv
 import os
 
-from sqlalchemy import true
-
 load_dotenv()
 
 # ENV VARS
@@ -57,6 +55,7 @@ def decode_access_token(token: str):
         return None
 
 
+# Verify access token against a user
 def verify_access_token(token: str, user: str):
     decoded_user = decode_access_token(token)
     if decoded_user and decoded_user == user:

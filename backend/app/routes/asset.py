@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
 from app.core.user_deps import get_current_user
 from app.models.asset import Asset
+from app.models.user import User
 from app.models.transaction import Transaction
 from app.schemas.asset import (
     TransactionUpdate,
@@ -21,11 +22,11 @@ router = APIRouter(prefix="/asset", tags=["Asset & Transactions"])
 async def create_asset_and_transaction(
     data: AssetOrTransactionCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     coin_upper = data.coin_symbol.upper()
 
-    # Check if coin_symbol is in Redis set "usdt_pairs"
+    # Check if coin_symbol is in Redis set "usdt_symbols"
     is_available = await redis_client.sismember("usdt_symbols", coin_upper)
 
     if not is_available:
@@ -34,12 +35,17 @@ async def create_asset_and_transaction(
             detail=f"Coin '{coin_upper}' is not available in the app yet.",
         )
 
+    # Disallow negative value
+    if data.value < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Transaction value cannot be negative.",
+        )
+
+    # Fetch or create asset
     asset = (
         db.query(Asset)
-        .filter(
-            Asset.user_id == current_user.id,
-            Asset.coin_symbol == coin_upper,
-        )
+        .filter(Asset.user_id == current_user.id, Asset.coin_symbol == coin_upper)
         .first()
     )
     if not asset:
@@ -48,9 +54,18 @@ async def create_asset_and_transaction(
         db.commit()
         db.refresh(asset)
 
-    transaction = Transaction(
-        asset_id=asset.id, amount=data.amount, price=data.purchase_price
-    )
+    # Calculate current total qty of the asset
+    current_qty = sum(float(t.qty) for t in asset.transactions)
+
+    # Prevent over-selling
+    if data.qty < 0 and current_qty + data.qty < 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient balance: cannot sell {abs(data.qty)} {coin_upper}. You only have {current_qty}.",
+        )
+
+    # Create transaction
+    transaction = Transaction(asset_id=asset.id, qty=data.qty, value=data.value)
     db.add(transaction)
     db.commit()
     db.refresh(transaction)
@@ -100,10 +115,10 @@ def update_transaction(
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
-    if data.amount is not None:
-        transaction.amount = data.amount
-    if data.price is not None:
-        transaction.price = data.price
+    if data.qty is not None:
+        transaction.qty = data.qty
+    if data.value is not None:
+        transaction.value = data.value
 
     db.commit()
     db.refresh(transaction)
@@ -149,3 +164,12 @@ def delete_asset_and_transactions(
     return {
         "detail": f"Asset with id: {asset_id} and all its transactions deleted successfully"
     }
+
+
+# Return available assets list
+@router.get("/all/")
+async def get_all_usdt_assets(current_user=Depends(get_current_user)):
+    symbols = await redis_client.smembers("usdt_symbols")
+    if not symbols:
+        raise HTTPException(status_code=404, detail="No USDT assets found in cache.")
+    return {"symbols": sorted(list(symbols))}

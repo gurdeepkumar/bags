@@ -8,8 +8,8 @@ class AssetOrTransactionCreate(BaseModel):
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
-    amount: float
-    purchase_price: float
+    qty: float
+    value: float
 
 
 class AssetResponse(BaseModel):
@@ -30,22 +30,22 @@ class AssetResponse(BaseModel):
 
 
 class TransactionUpdate(BaseModel):
-    amount: Optional[float]
-    price: Optional[float]
+    qty: Optional[float]
+    value: Optional[float]
 
 
 class TransactionResponse(BaseModel):
     tx_id: int
-    amount: float
-    price: float
+    qty: float
+    value: float
     timestamp: datetime
 
     @classmethod
     def from_orm(cls, obj):
         return cls(
             tx_id=obj.id,
-            amount=obj.amount,
-            price=obj.price,
+            qty=obj.qty,
+            value=obj.value,
             timestamp=obj.timestamp,
         )
 
