@@ -16,6 +16,8 @@ app = FastAPI(
 origins = [
     "https://bags.gurdeepkumar.com",
     "https://bags-api.gurdeepkumar.com",
+    "http://localhost:3000",  # your React frontend URL
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
@@ -27,7 +29,7 @@ app.add_middleware(
 )
 
 # HTTPS
-app.add_middleware(HTTPSRedirectMiddleware)
+# app.add_middleware(HTTPSRedirectMiddleware)
 
 # Including the sub routes
 app.include_router(user.router)

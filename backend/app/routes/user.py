@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from sqlalchemy import false
 from sqlalchemy.orm import Session
 
 from app.schemas.user import (
     UserCreate,
     LoginRequest,
-    TokenResponse,
-    TokenRefreshRequest,
     AccessTokenResponse,
     UserProfile,
     UpdatePasswordRequest,
@@ -16,6 +15,7 @@ from app.core.security import hash_password, verify_password
 from app.db.deps import get_db
 from app.core.jwt import create_refresh_token, create_access_token
 from app.core.user_deps import get_current_user
+from fastapi import Response
 
 router = APIRouter(prefix="/usr", tags=["User"])
 
@@ -53,12 +53,15 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {"message": "User registered successfully"}
+    return {"data": "User registered successfully"}
 
 
 # Get refresh and access token with email and password
-@router.post("/login", response_model=TokenResponse)
-def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+@router.post("/login")
+def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> None:
+
+    response = Response(content="Cookie set")
+
     user = db.query(User).filter(User.email == user_input.email).first()
 
     if not user or not verify_password(user_input.password, user.hashed_password):
@@ -67,19 +70,31 @@ def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> TokenRespo
         )
 
     refresh_token = create_refresh_token(user.username)
-    access_token = create_access_token(refresh_token)
 
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-    }
+    # Set the refresh token as HttpOnly cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="none",
+        secure=True,
+        path="/",
+        expires=60 * 60 * 24,
+    )
+
+    # No response body needed, just 204 No Content
+    return response
 
 
 # Get a new access token using refresh token
 @router.post("/refresh-token", response_model=AccessTokenResponse)
-def refresh_token(request: TokenRefreshRequest) -> AccessTokenResponse:
+def refresh_token(request: Request) -> AccessTokenResponse:
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token missing")
+
     try:
-        new_token = create_access_token(request.refresh_token)
+        new_token = create_access_token(refresh_token)
         return AccessTokenResponse(access_token=new_token)
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
