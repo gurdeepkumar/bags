@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy import false
+from sqlalchemy import false, true
 from sqlalchemy.orm import Session
 
 from app.schemas.user import (
@@ -75,11 +75,30 @@ def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> None:
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        httponly=True,
+        httponly=true,
         samesite="none",
         secure=True,
         path="/",
+        domain="gurdeeokumar.com",
         expires=60 * 60 * 24,
+    )
+
+    # No response body needed, just 204 No Content
+    return response
+
+
+# TEST COOKIE
+@router.get("/set-cookie")
+def set_cookie() -> None:
+
+    response = Response()
+
+    # Set the refresh token as HttpOnly cookie
+    response.set_cookie(
+        key="refresh_token",
+        value="refresh_token",
+        httponly=True,
+        max_age=60 * 60 * 24,
     )
 
     # No response body needed, just 204 No Content
