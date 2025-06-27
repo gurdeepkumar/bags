@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy import false, true
 from sqlalchemy.orm import Session
 
 from app.schemas.user import (
@@ -16,13 +15,21 @@ from app.db.deps import get_db
 from app.core.jwt import create_refresh_token, create_access_token
 from app.core.user_deps import get_current_user
 from fastapi import Response
+from fastapi.responses import JSONResponse
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+DEBUG = os.getenv("DEBUG")
+
 
 router = APIRouter(prefix="/usr", tags=["User"])
 
 
 # Create user with username, email and password
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(user: UserCreate, response: Response, db: Session = Depends(get_db)):
     # Check if email or username already exists
     existing_user = (
         db.query(User)
@@ -53,14 +60,25 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {"data": "User registered successfully"}
+    refresh_token = create_refresh_token(user.username)
+    access_token = create_access_token(refresh_token)
+
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="lax",
+        secure=True if DEBUG else False,
+        path="/",
+        max_age=5 * 24 * 3600,
+    )
+
+    return {"accessToken": access_token}
 
 
 # Get refresh and access token with email and password
 @router.post("/login")
-def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> None:
-
-    response = Response(content="Cookie set")
+def login(user_input: LoginRequest, response: Response, db: Session = Depends(get_db)):
 
     user = db.query(User).filter(User.email == user_input.email).first()
 
@@ -70,38 +88,35 @@ def login(user_input: LoginRequest, db: Session = Depends(get_db)) -> None:
         )
 
     refresh_token = create_refresh_token(user.username)
+    access_token = create_access_token(refresh_token)
 
-    # Set the refresh token as HttpOnly cookie
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        httponly=true,
-        samesite="none",
-        secure=True,
-        path="/",
-        domain="gurdeeokumar.com",
-        expires=60 * 60 * 24,
-    )
-
-    # No response body needed, just 204 No Content
-    return response
-
-
-# TEST COOKIE
-@router.get("/set-cookie")
-def set_cookie() -> None:
-
-    response = Response()
-
-    # Set the refresh token as HttpOnly cookie
-    response.set_cookie(
-        key="refresh_token",
-        value="refresh_token",
         httponly=True,
-        max_age=60 * 60 * 24,
+        samesite="lax",
+        secure=True if DEBUG else False,
+        path="/",
+        max_age=5 * 24 * 3600,
     )
 
-    # No response body needed, just 204 No Content
+    return {"accessToken": access_token}
+
+
+# Logout
+@router.post("/logout")
+def logout(response: Response, request: Request):
+
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token missing")
+
+    # Build proper JSON response
+    response = JSONResponse(content={"message": "Logged out successfully."})
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+    )
     return response
 
 
@@ -130,23 +145,42 @@ def get_me(current_user: User = Depends(get_current_user)):
 
 # Update new password with email and old password
 @router.put("/update-password")
-def update_password(data: UpdatePasswordRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == data.email).first()
-    if not user or not verify_password(data.old_password, user.hashed_password):
+def update_password(
+    data: UpdatePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    get_user = db.query(User).filter(User.email == data.email).first()
+
+    if not get_user or not verify_password(data.old_password, get_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    user.hashed_password = hash_password(data.new_password)
+    if current_user.username != get_user.username:
+        raise HTTPException(
+            status_code=403, detail="Username does not match logged-in user"
+        )
+
+    get_user.hashed_password = hash_password(data.new_password)
     db.commit()
     return {"message": "Password updated successfully"}
 
 
 # Delete user with email and password
 @router.delete("")
-def delete_user(data: DeleteUserRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == data.email).first()
-    if not user or not verify_password(data.password, user.hashed_password):
+def delete_user(
+    data: DeleteUserRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    get_user = db.query(User).filter(User.email == data.email).first()
+    if not get_user or not verify_password(data.password, get_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    db.delete(user)
+    if current_user.username != get_user.username:
+        raise HTTPException(
+            status_code=403, detail="Username does not match logged-in user"
+        )
+
+    db.delete(get_user)
     db.commit()
     return {"message": "User deleted successfully"}

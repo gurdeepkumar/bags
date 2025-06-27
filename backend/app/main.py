@@ -15,9 +15,7 @@ if DEBUG:
     origins = [
         "https://bags.gurdeepkumar.com",
         "https://bags-api.gurdeepkumar.com",
-        "https://localhost:3000",
         "https://127.0.0.1:3000",
-        "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
 else:
