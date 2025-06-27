@@ -1,6 +1,6 @@
 # 👜 Bags
 
-**Bags** is a minimal crypto portfolio tracker with user authentication.
+**Bags** is a crypto portfolio tracker with user authentication.
 
 ## 🚀 Tech Stack
 
