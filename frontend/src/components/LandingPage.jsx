@@ -49,7 +49,7 @@ export default function LandingPage() {
           <div className="mt-6">
             <a
               href="/register"
-              className="inline-block bg-amber-600 hover:bg-amber-700font-semibold px-6 py-3 rounded-xl transition"
+              className="inline-block font-semibold bg-amber-600 hover:bg-amber-700font-semibold px-6 py-3 rounded-xl transition"
             >
               Get Started
             </a>

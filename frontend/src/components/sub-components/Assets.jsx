@@ -205,7 +205,7 @@ export default function Assets({ data, onPortfolioChange }) {
             </div>
             <button
               onClick={handleAddAsset}
-              className="bg-amber-500 text-sm hover:bg-amber-600 transition px-4 py-2 rounded text-white"
+              className="bg-amber-600 font-semibold text-sm hover:bg-amber-600 transition px-4 py-2 rounded text-white"
             >
               Add Asset
             </button>
