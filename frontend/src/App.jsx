@@ -5,9 +5,9 @@ import { AuthProvider } from "./auth/AuthContext";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
-import Home from "./pages/Home";
-import Navbar from "./compnents/NavBar";
-import Footer from "./compnents/Footer";
+import Portfolio from "./pages/Portfolio";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 import { PrivateRoute, GuestRoute } from "./routes/ProtectedRoute";
 
@@ -18,7 +18,7 @@ function App() {
         <Router>
           <Navbar />
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Portfolio />} />
 
             <Route
               path="/login"

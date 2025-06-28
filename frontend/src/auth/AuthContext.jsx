@@ -6,6 +6,8 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState({ username: "", email: "" });
+  const [loading, setLoading] = useState(true); // ✅ auth hydration state
+  const [accessToken, updateAccessToken] = useState(getAccessToken());
 
   const fetchUser = async () => {
     try {
@@ -24,6 +26,7 @@ export function AuthProvider({ children }) {
 
   const login = async (token) => {
     setAccessToken(token);
+    updateAccessToken(token);
     await fetchUser();
   };
 
@@ -34,6 +37,7 @@ export function AuthProvider({ children }) {
       // Optional: handle logout failure
     }
     clearAccessToken();
+    updateAccessToken(null);
     setUser({ username: "", email: "" });
   };
 
@@ -41,18 +45,24 @@ export function AuthProvider({ children }) {
     const tryRefresh = async () => {
       try {
         const res = await api.post("/usr/refresh-token", {}, { withCredentials: true });
-        setAccessToken(res.data.access_token);
+        const token = res.data.access_token;
+        setAccessToken(token);
+        updateAccessToken(token);
         await fetchUser();
       } catch {
         clearAccessToken();
+        updateAccessToken(null);
         setUser({ username: "", email: "" });
+      } finally {
+        setLoading(false); // ✅ Done trying to refresh
       }
     };
-    tryRefresh(); // Attempt silent refresh on first load
+
+    tryRefresh(); // Attempt silent login
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
