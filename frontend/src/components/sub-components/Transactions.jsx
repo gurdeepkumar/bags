@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../api/axiosInstance";
+import api from "../../api/axiosInstance";
 import { toast } from "react-hot-toast";
 
 export default function Transactions({ assetId, assetSymbol, onAssetChange }) {
@@ -45,14 +45,15 @@ export default function Transactions({ assetId, assetSymbol, onAssetChange }) {
 
     try {
       setSubmitting(true);
-      const res = await api.post("/asset", {
-        coin_symbol: assetSymbol,
+      const res = await api.post("/asset/transaction", {
+        asset_id: assetId,
         qty: parsedQty,
         value: parsedValue,
       }, { withCredentials: true });
 
       setTransactions((prev) => [...prev, res.data]);
-      setQty(""); setValue("");
+      setQty(""); 
+      setValue("");
       toast.success("Transaction added");
       onAssetChange?.()
     } catch {
@@ -113,8 +114,8 @@ export default function Transactions({ assetId, assetSymbol, onAssetChange }) {
   if (loading) return <div className="text-amber-300">Loading...</div>;
 
   return (
-    <div className="md:w-11/12 m-auto mt-4">
-      <h3 className="bg-neutral-700 text-white font-semibold px-4 py-2 rounded mb-2">
+    <div className="md:w-11/12 p-0.5 m-auto mt-4">
+      <h3 className="bg-neutral-700 text-white font-semibold px-2 py-2 rounded mb-2">
         Transactions for {assetSymbol}
       </h3>
 
@@ -176,10 +177,10 @@ export default function Transactions({ assetId, assetSymbol, onAssetChange }) {
                       <td className="hidden md:table-cell px-4 py-2">${formatNum(buyPrice)}</td>
                       <td className="px-4 py-2 text-center space-x-2">
                         <button onClick={() => startEdit(tx)} className="bg-amber-500 px-3 py-1 rounded text-black">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
                         </button>
                         <button onClick={() => handleDelete(tx.tx_id)} className="bg-red-600 px-3 py-1 rounded text-white">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                         </button>
                       </td>
                     </>

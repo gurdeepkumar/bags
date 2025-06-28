@@ -1,6 +1,14 @@
 export default function Tiles(props) {
+
+    if (props.data["Current Value"] == 0) {
+        return (
+            <></>
+        );
+    }
+
     return(
         <>
+            <h2 className="text-3xl font-bold mb-6">Portfolio Overview</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-10">
                 <div className="bg-neutral-800 p-4 rounded shadow">
                 <h3 className="text-xl text-amber-200 font-semibold mb-2">Total Invested</h3>

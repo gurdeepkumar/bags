@@ -3,11 +3,15 @@ from typing import Annotated, Optional
 from datetime import datetime
 
 
-class AssetOrTransactionCreate(BaseModel):
+class AssetCreate(BaseModel):
     coin_symbol: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
+
+
+class TransactionCreate(BaseModel):
+    asset_id: int
     qty: float
     value: float
 

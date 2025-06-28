@@ -8,7 +8,8 @@ from app.models.transaction import Transaction
 from app.schemas.asset import (
     TransactionUpdate,
     TransactionResponse,
-    AssetOrTransactionCreate,
+    AssetCreate,
+    TransactionCreate,
     AssetResponse,
 )
 from typing import List
@@ -17,7 +18,7 @@ from app.core.cache import redis_client
 router = APIRouter(prefix="/asset", tags=["Asset & Transactions"])
 
 
-# Create asset and tx
+""" # Create asset and tx
 @router.post("", response_model=TransactionResponse)
 async def create_asset_and_transaction(
     data: AssetOrTransactionCreate,
@@ -54,7 +55,7 @@ async def create_asset_and_transaction(
         db.commit()
         db.refresh(asset)
 
-    # Calculate current total qty of the asset
+    v
     current_qty = sum(float(t.qty) for t in asset.transactions)
 
     # Prevent over-selling
@@ -65,6 +66,79 @@ async def create_asset_and_transaction(
         )
 
     # Create transaction
+    transaction = Transaction(asset_id=asset.id, qty=data.qty, value=data.value)
+    db.add(transaction)
+    db.commit()
+    db.refresh(transaction)
+
+    return TransactionResponse.from_orm(transaction)
+ """
+
+
+@router.post("", status_code=201)
+async def create_asset(
+    data: AssetCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    coin_upper = data.coin_symbol.upper()
+
+    is_available = await redis_client.sismember("usdt_symbols", coin_upper)
+    if not is_available:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Coin '{coin_upper}' is not available in the app yet.",
+        )
+
+    asset = (
+        db.query(Asset)
+        .filter(Asset.user_id == current_user.id, Asset.coin_symbol == coin_upper)
+        .first()
+    )
+    if asset:
+        return {"message": f"Asset '{coin_upper}' already exists."}
+
+    asset = Asset(user_id=current_user.id, coin_symbol=coin_upper)
+    db.add(asset)
+    db.commit()
+    db.refresh(asset)
+    return {
+        "message": f"Asset '{coin_upper}' created successfully.",
+        "asset_id": asset.id,
+    }
+
+
+@router.post("/transaction", response_model=TransactionResponse)
+async def create_transaction(
+    data: TransactionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    asset = (
+        db.query(Asset)
+        .filter(Asset.id == data.asset_id, Asset.user_id == current_user.id)
+        .first()
+    )
+    if not asset:
+        raise HTTPException(
+            status_code=404,
+            detail="Asset not found or not owned by current user.",
+        )
+
+    if data.value < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Transaction value cannot be negative.",
+        )
+
+    current_qty = sum(float(t.qty) for t in asset.transactions)
+
+    if data.qty < 0 and current_qty + data.qty < 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient balance: cannot sell {abs(data.qty)} {asset.coin_symbol}. You only have {current_qty}.",
+        )
+
     transaction = Transaction(asset_id=asset.id, qty=data.qty, value=data.value)
     db.add(transaction)
     db.commit()

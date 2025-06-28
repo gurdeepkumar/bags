@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axiosInstance";
 import { toast, Toaster } from "react-hot-toast";
-import Tiles from "../components/Tiles";
-import Assets from "../components/Assets";
+import Tiles from "../components/sub-components/Tiles";
+import Assets from "../components/sub-components/Assets";
 import { useAuth } from "../auth/AuthContext";
 
 function Portfolio() {
@@ -11,7 +11,6 @@ function Portfolio() {
   const { accessToken, loading: authLoading } = useAuth();
 
   const fetchPortfolio = async () => {
-    console.time("fetchPortfolio");
     try {
       const response = await api.get("/portfolio", { withCredentials: true });
       setData(response.data.data);
@@ -19,7 +18,6 @@ function Portfolio() {
       toast.error("Failed to load portfolio");
     } finally {
       setLoading(false);
-      console.timeEnd("fetchPortfolio");
     }
   };
 
@@ -60,9 +58,8 @@ const tiles_data = {
 
 
   return (
-    <div className="p-6 text-amber-50 bg-neutral-900 min-h-screen">
+    <div className="p-6 text-amber-50 bg-neutral-900 mb-14">
       <Toaster position="top-center" />
-      <h2 className="text-3xl font-bold mb-6">Portfolio Overview</h2>
       <Tiles data={tiles_data} />
       <h3 className="text-2xl font-bold mb-4">Assets</h3>
       <Assets onPortfolioChange={fetchPortfolio} data={assets} />

@@ -78,7 +78,15 @@ function Settings() {
     <div className="flex-grow flex flex-col items-center text-amber-50 px-4 py-8">
       <Toaster position="top-center" />
       <div className="bg-neutral-800 p-8 rounded shadow-md w-full max-w-md space-y-8">
-        <h2 className="text-2xl text-amber-200 font-bold text-center">Olá, {user?.username || user?.email}</h2>
+        <h2 className="text-2xl text-amber-200 font-bold text-center"> 
+          Olá { 
+                  user?.username
+                  ?.toLowerCase()
+                  .split(" ")
+                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")
+                }
+        </h2>
 
         {/* Update Password Form */}
         <section>
