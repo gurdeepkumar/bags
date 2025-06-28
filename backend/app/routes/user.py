@@ -73,7 +73,7 @@ def register_user(user: UserCreate, response: Response, db: Session = Depends(ge
         max_age=5 * 24 * 3600,
     )
 
-    return {"accessToken": access_token}
+    return {"access_token": access_token}
 
 
 # Get refresh and access token with email and password
@@ -100,7 +100,7 @@ def login(user_input: LoginRequest, response: Response, db: Session = Depends(ge
         max_age=5 * 24 * 3600,
     )
 
-    return {"accessToken": access_token}
+    return {"access_token": access_token}
 
 
 # Logout

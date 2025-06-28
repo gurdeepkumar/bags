@@ -15,6 +15,7 @@ async def get_user_assets_with_transactions(
     result = {"assets": []}
     total_value_sum = 0.0
     total_pnl_sum = 0.0
+    total_current_value_sum = 0.0
 
     top_gainer = None
     top_gainer_pnl = float("-inf")
@@ -51,6 +52,7 @@ async def get_user_assets_with_transactions(
 
         total_value_sum += total_value
         total_pnl_sum += pnl
+        total_current_value_sum += current_value
 
         if pnl > top_gainer_pnl:
             top_gainer_pnl = pnl
@@ -61,7 +63,7 @@ async def get_user_assets_with_transactions(
                 symbol: {
                     "asset_id": asset.id,
                     "total_qty": round(total_qty, 4),
-                    "total_value_spent": round(total_value, 2),
+                    "spent_value": round(total_value, 2),
                     "current_price": round(price, 4),
                     "current_value": round(current_value, 2),
                     "pnl": round(pnl, 2),
@@ -69,7 +71,8 @@ async def get_user_assets_with_transactions(
             }
         )
 
-    result["total_value"] = round(total_value_sum, 2)
+    result["total_spent_value"] = round(total_value_sum, 2)
+    result["total_current_value"] = round(total_current_value_sum, 2)
     result["total_pnl"] = round(total_pnl_sum, 2)
     result["top_gainer"] = top_gainer
 
