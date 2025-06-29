@@ -111,7 +111,13 @@ export default function Transactions({ assetId, assetSymbol, onAssetChange }) {
 
   const buyPrice = qty && value && Number(qty) > 0 ? Number(value) / Number(qty) : null;
 
-  if (loading) return <div className="text-amber-300">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-32">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="md:w-11/12 p-0.5 m-auto mt-4">

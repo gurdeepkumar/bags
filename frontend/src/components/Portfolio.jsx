@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import api from "../api/axiosInstance";
 import { toast, Toaster } from "react-hot-toast";
 import Tiles from "../components/sub-components/Tiles";
 import Assets from "../components/sub-components/Assets";
 import { useAuth } from "../auth/AuthContext";
 
-function Portfolio() {
+export default function Portfolio() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { accessToken, loading: authLoading } = useAuth();
@@ -34,7 +34,15 @@ function Portfolio() {
   }, [authLoading, accessToken]);
 
   if (loading) {
-    return <div className="text-center text-amber-50 py-6">Loading portfolio...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="flex space-x-2">
+          <div className="w-3 h-3 bg-amber-200 rounded-full animate-bounce"></div>
+          <div className="w-3 h-3 bg-amber-200 rounded-full animate-bounce [animation-delay:-0.2s]"></div>
+          <div className="w-3 h-3 bg-amber-200 rounded-full animate-bounce [animation-delay:-0.4s]"></div>
+        </div>
+      </div>
+    );
   }
 
   if (!data) {
@@ -42,19 +50,19 @@ function Portfolio() {
   }
 
   const {
-  assets = [],
-  total_spent_value = 0,
-  total_current_value = 0,
-  total_pnl = 0,
-  top_gainer = "N/A",
-} = data;
+    assets = [],
+    total_spent_value = 0,
+    total_current_value = 0,
+    total_pnl = 0,
+    top_gainer = "N/A",
+  } = data;
 
-const tiles_data = {
-  "Total Invested": total_spent_value,
-  "Current Value": total_current_value,
-  "Total PnL": total_pnl,
-  "Top Gainer": top_gainer,
-};
+  const tiles_data = {
+    "Total Invested": total_spent_value,
+    "Current Value": total_current_value,
+    "Total PnL": total_pnl,
+    "Top Gainer": top_gainer,
+  };
 
 
   return (
@@ -67,4 +75,4 @@ const tiles_data = {
   );
 }
 
-export default Portfolio;
+
