@@ -35,7 +35,7 @@ function Register() {
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const res = await api.post("http://127.0.0.1:8000/usr/register", values, {
+        const res = await api.post("/usr/register", values, {
           withCredentials: true,
         });
         login(res.data.access_token);

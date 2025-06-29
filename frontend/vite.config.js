@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
-    // mkcert()
+    //mkcert()
   ],
   server: {
     host: '127.0.0.1',

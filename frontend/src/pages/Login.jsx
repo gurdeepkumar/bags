@@ -17,7 +17,7 @@ function Login() {
     e.preventDefault();
     try {
       const res = await api.post(
-        "http://127.0.0.1:8000/usr/login",
+        "/usr/login",
         form,
         { withCredentials: true }
       );

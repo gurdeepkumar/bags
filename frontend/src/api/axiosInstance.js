@@ -2,8 +2,11 @@ import axios from "axios";
 import { getAccessToken, setAccessToken, clearAccessToken } from "../auth/auth";
 import { jwtDecode } from "jwt-decode";
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const refreshTokenUrl = apiUrl+"/usr/refresh-token"
+
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000",
+  baseURL: apiUrl,
   withCredentials: true,
 });
 
@@ -38,7 +41,7 @@ api.interceptors.request.use(
         isRefreshing = true;
         try {
           const res = await axios.post(
-            "http://127.0.0.1:8000/usr/refresh-token",
+            refreshTokenUrl,
             {},
             { withCredentials: true }
           );
