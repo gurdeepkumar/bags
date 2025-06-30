@@ -1,5 +1,5 @@
 
-# 👜 Bags – Crypto Portfolio Tracker
+# 💰 Bags – Crypto Portfolio Tracker
 
 **Bags** is a full-stack cryptocurrency portfolio tracking application built with a modern React frontend and a FastAPI backend. It features secure user authentication, real-time balance tracking, and backend deployed on AWS infrastructure.
 
