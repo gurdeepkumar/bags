@@ -21,7 +21,7 @@
     "react-hot-toast": "^2.5.2",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.2",
-    "recharts": "^3.0.0",
+    "recharts": "^3.0.2",
     "tailwindcss": "^4.1.10",
     "yup": "^1.6.1"
   },

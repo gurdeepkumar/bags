@@ -4,6 +4,7 @@ import { toast, Toaster } from "react-hot-toast";
 import Tiles from "../components/sub-components/Tiles";
 import Assets from "../components/sub-components/Assets";
 import { useAuth } from "../auth/AuthContext";
+import PortfolioCharts from "./sub-components/PortfolioCharts";
 
 export default function Portfolio() {
   const [data, setData] = useState(null);
@@ -71,6 +72,7 @@ export default function Portfolio() {
       <Tiles data={tiles_data} />
       <h3 className="text-2xl font-bold mb-4">Assets</h3>
       <Assets onPortfolioChange={fetchPortfolio} data={assets} />
+      <PortfolioCharts data={data} />
     </div>
   );
 }
