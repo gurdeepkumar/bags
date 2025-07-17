@@ -20,9 +20,11 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: frontend
 
       - name: Build React app
         run: npm run build
+        working-directory: frontend
 
       - name: Setup SSH
         run: |
