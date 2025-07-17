@@ -1,5 +1,6 @@
 import Portfolio from "../components/Portfolio";
 import LandingPage from "../components/LandingPage";
+import ApiLimitNotice from "../components/sub-components/ApiLimitNotice";
 import { useAuth } from "../auth/AuthContext";
 
 export default function Home() {
@@ -22,6 +23,7 @@ export default function Home() {
   return (
     <div className="md:w-4/5 w-full mx-auto py-6">
       {user?.username !== "" ? <Portfolio /> : <LandingPage />}
+      <ApiLimitNotice />
     </div>
   );
 }

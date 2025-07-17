@@ -125,6 +125,7 @@ def logout(response: Response, request: Request):
     response = JSONResponse(content={"message": "Logged out successfully."})
     response.delete_cookie(
         key="refresh_token",
+        samesite="none",
         path="/",
     )
     return response
