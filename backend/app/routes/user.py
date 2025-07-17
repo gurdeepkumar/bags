@@ -126,6 +126,7 @@ def logout(response: Response, request: Request):
     response.delete_cookie(
         key="refresh_token",
         samesite="none",
+        secure=True if DEBUG else False,
         path="/",
     )
     return response
