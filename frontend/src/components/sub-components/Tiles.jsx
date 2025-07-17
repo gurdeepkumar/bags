@@ -8,7 +8,7 @@ export default function Tiles({ data }) {
     if (data["Current Value"] > 0) {
       const timeout = setTimeout(() => {
         setShowTiles(true);
-      }, 200); // simulate short animation delay
+      }, 0); // simulate short animation delay
       return () => clearTimeout(timeout);
     } else {
       setShowTiles(false);

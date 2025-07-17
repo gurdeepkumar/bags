@@ -1,5 +1,5 @@
 import React from 'react';
-import hero from "/hero.png"
+import hero from "/hero.webp"
 import { Edit, TrendingUp, BarChart4 } from "./icons/Icons";
 
 export default function LandingPage() {
