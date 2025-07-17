@@ -19,7 +19,7 @@ function Register() {
   const validationSchema = Yup.object({
     username: Yup.string()
       .min(6, "Too short")
-      .max(50, "Too long")
+      .max(12, "Too long")
       .matches(/^[A-Za-z]+$/, "Username must contain only alphabets")
       .required("Username is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),

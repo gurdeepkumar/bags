@@ -18,63 +18,6 @@ from app.core.cache import redis_client
 router = APIRouter(prefix="/asset", tags=["Asset & Transactions"])
 
 
-""" # Create asset and tx
-@router.post("", response_model=TransactionResponse)
-async def create_asset_and_transaction(
-    data: AssetOrTransactionCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    coin_upper = data.coin_symbol.upper()
-
-    # Check if coin_symbol is in Redis set "usdt_symbols"
-    is_available = await redis_client.sismember("usdt_symbols", coin_upper)
-
-    if not is_available:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Coin '{coin_upper}' is not available in the app yet.",
-        )
-
-    # Disallow negative value
-    if data.value < 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Transaction value cannot be negative.",
-        )
-
-    # Fetch or create asset
-    asset = (
-        db.query(Asset)
-        .filter(Asset.user_id == current_user.id, Asset.coin_symbol == coin_upper)
-        .first()
-    )
-    if not asset:
-        asset = Asset(user_id=current_user.id, coin_symbol=coin_upper)
-        db.add(asset)
-        db.commit()
-        db.refresh(asset)
-
-    v
-    current_qty = sum(float(t.qty) for t in asset.transactions)
-
-    # Prevent over-selling
-    if data.qty < 0 and current_qty + data.qty < 0:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Insufficient balance: cannot sell {abs(data.qty)} {coin_upper}. You only have {current_qty}.",
-        )
-
-    # Create transaction
-    transaction = Transaction(asset_id=asset.id, qty=data.qty, value=data.value)
-    db.add(transaction)
-    db.commit()
-    db.refresh(transaction)
-
-    return TransactionResponse.from_orm(transaction)
- """
-
-
 @router.post("", status_code=201)
 async def create_asset(
     data: AssetCreate,

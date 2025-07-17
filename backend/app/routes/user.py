@@ -10,6 +10,7 @@ from app.schemas.user import (
     DeleteUserRequest,
 )
 from app.models import User
+from app.models.asset import Asset
 from app.core.security import hash_password, verify_password
 from app.db.deps import get_db
 from app.core.jwt import create_refresh_token, create_access_token
@@ -62,6 +63,15 @@ def register_user(user: UserCreate, response: Response, db: Session = Depends(ge
 
     refresh_token = create_refresh_token(user.username)
     access_token = create_access_token(refresh_token)
+
+    coin_symbols = ["BTC", "ETH", "BNB"]
+
+    for symbol in coin_symbols:
+        asset = Asset(user_id=new_user.id, coin_symbol=symbol)
+        db.add(asset)
+
+    # Commit all the new assets
+    db.commit()
 
     response.set_cookie(
         key="refresh_token",
