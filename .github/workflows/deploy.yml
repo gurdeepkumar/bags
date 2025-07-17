@@ -35,4 +35,4 @@ jobs:
 
       - name: Deploy to VPS
         run: |
-          rsync -avz --delete ./build/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.DEPLOY_PATH }}
+          rsync -avz --delete frontend/build/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.DEPLOY_PATH }}
